@@ -8,11 +8,12 @@ import { GLTFLoader } from "three/examples/jsm/Addons.js";
 
 export default function Scene(){
 
-    const mountRef = useRef<any>(null)
+    const mountRef = useRef<HTMLDivElement|null>(null)
 
     useEffect(() => {
         const scene=new THREE.Scene()
-        const camera =new THREE.PerspectiveCamera(90,mountRef.current.offsetWidth/mountRef.current.offsetHeight,0.1,1000);
+        if (!mountRef.current) return;
+        const camera = new THREE.PerspectiveCamera(90, mountRef.current.offsetWidth / mountRef.current.offsetHeight, 0.1, 1000);
         const renderer =new THREE.WebGLRenderer({antialias:true})
 
         camera.position.set(0,4,4);
@@ -50,6 +51,7 @@ export default function Scene(){
         animate()
 
         const handlesize=()=>{
+            if (!mountRef.current) return;
             camera.aspect=mountRef.current.offsetWidth/mountRef.current.offsetHeight
             camera.updateProjectionMatrix()
             renderer.setSize(mountRef.current.offsetWidth,mountRef.current.offsetHeight)
@@ -57,8 +59,10 @@ export default function Scene(){
         window.addEventListener('resize',handlesize)
 
         return(()=>{
+            if (!mountRef.current) return;
             window.removeEventListener('resize',handlesize)
             mountRef.current.removeChild(renderer.domElement)
+            
         })
     }, [])
     
