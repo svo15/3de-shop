@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import * as THREE from "three"
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from "three/examples/jsm/Addons.js";
@@ -9,6 +9,7 @@ import { GLTFLoader } from "three/examples/jsm/Addons.js";
 export default function Scene(){
 
     const mountRef = useRef<HTMLDivElement|null>(null)
+    const [loading, setLoading] = useState<boolean>(true)
 
     useEffect(() => {
         const scene=new THREE.Scene()
@@ -33,7 +34,19 @@ export default function Scene(){
         const gridhelper =new THREE.GridHelper(10,10)
         scene.add(gridhelper)
 
-        const loader =new GLTFLoader()
+        const loadingManager = new THREE.LoadingManager();
+        loadingManager.onLoad=()=>{
+            setLoading(false)
+            console.log("loaded")
+        }
+        loadingManager.onProgress=(url,loaded,total)=>{
+            console.log(`Progress of loading ${url}:  ${loaded}of${total}`)
+        }
+        loadingManager.onError=(url)=>{
+            console.log(`Error loading ${url}`)
+        }
+
+        const loader =new GLTFLoader(loadingManager)
 
         loader.load('/baseballhat.glb',(gltf)=>{
             const root =gltf.scene;
@@ -66,6 +79,15 @@ export default function Scene(){
         })
     }, [])
     
-    return <div ref={mountRef} className="w-full h-screen"></div>
+    return(
+        <>
+        {loading&&(
+        <div className="w-full h-screen flex items-center justify-center text-4xl fixed  bg-black ">
+            Loading 3D model 
+        </div>)}
+        <div ref={mountRef} className="w-full h-screen"></div>
+    </> 
+    )
+    
 
 }
